@@ -1,0 +1,15 @@
+[
+  {
+    "url": "https://netflixtechblog.com",
+    "title": "Netflix TechBlog",
+    "description": "Learn about Netflix’s world class engineering efforts, company culture, product developments and more. - Medium",
+    "kind": "blog",
+    "tags": [
+      "data",
+      "ai-ml",
+      "devops"
+    ],
+    "feed": "https://netflixtechblog.com/feed",
+    "added_at": "2026-11-06T18:28:45.9117129-05:00"
+  }
+]
