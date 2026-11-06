@@ -2,7 +2,7 @@
 
 > Blogs y sites de tecnología, agrupados por tema.
 
-5 temas · 9 sitios
+6 temas · 10 sitios
 
 ## Temas
 
@@ -12,4 +12,5 @@
 | [Data](topics/data/README.md) | 1 |
 | [DevOps](topics/devops/README.md) | 1 |
 | [Go](topics/golang/README.md) | 2 |
+| [Python](topics/python/README.md) | 1 |
 | [Security](topics/security/README.md) | 2 |
