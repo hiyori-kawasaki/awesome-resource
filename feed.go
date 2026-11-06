@@ -83,6 +83,18 @@ func inspect(ctx context.Context, raw string) (Site, error) {
 		metaTitle, metaDesc = parseMeta(page)
 	}
 
+	// un artículo suelto se describe con su propia página, no con el feed del site
+	if pageErr == nil && isArticle(page, raw) {
+		s.Kind = "article"
+		s.Title = metaTitle
+		if s.Title == "" {
+			s.Title = hostOf(raw)
+		}
+		s.Description = metaDesc
+		s.Tags = tagsFromText(metaTitle + " " + metaDesc)
+		return s, nil
+	}
+
 	var f *feed
 	if pageErr == nil {
 		if fu := discoverFeed(page, raw); fu != "" {
@@ -393,4 +405,40 @@ func clean(s string, max int) string {
 		return strings.TrimSpace(string(r[:max-1])) + "…"
 	}
 	return s
+}
+
+// isArticle decide si la URL es un artículo suelto y no la portada de un site:
+// og:type=article, fecha de publicación, o un slug largo al final del path (a-b-c).
+func isArticle(page, raw string) bool {
+	for _, tag := range reMeta.FindAllString(page, -1) {
+		a := attrMap(tag)
+		key := strings.ToLower(first(a["property"], a["name"]))
+		val := strings.ToLower(a["content"])
+		if (key == "og:type" && val == "article") || key == "article:published_time" {
+			return true
+		}
+	}
+	u, err := url.Parse(raw)
+	if err != nil {
+		return false
+	}
+	segs := strings.Split(strings.Trim(u.Path, "/"), "/")
+	last := segs[len(segs)-1]
+	return strings.Count(last, "-") >= 2
+}
+
+// tagsFromText detecta temas en un texto corto (título + descripción de un artículo).
+func tagsFromText(text string) []string {
+	hay := strings.NewReplacer("-", " ", "_", " ").Replace(strings.ToLower(text))
+	var out []string
+	for tag, re := range vocab {
+		if re.MatchString(hay) {
+			out = append(out, tag)
+		}
+	}
+	sort.Strings(out)
+	if len(out) > 4 {
+		out = out[:4]
+	}
+	return out
 }

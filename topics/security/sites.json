@@ -10,5 +10,16 @@
     ],
     "feed": "https://proton.me/blog/feed",
     "added_at": "2026-11-06T18:28:45.9111456-05:00"
+  },
+  {
+    "url": "https://proton.me/blog/ai-chatbot-survey",
+    "title": "Proton survey: People don't trust AI, but they tell it everything | Proton",
+    "description": "New research finds that most AI chatbot users have shared something sensitive, but few trust the companies behind them.",
+    "kind": "blog",
+    "tags": [
+      "ai-ml",
+      "security"
+    ],
+    "added_at": "2026-11-06T18:35:44.5962813-05:00"
   }
 ]

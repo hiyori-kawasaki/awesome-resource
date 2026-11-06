@@ -446,6 +446,59 @@ func line(s Site, slug string) string {
 	return b.String()
 }
 
+type node struct {
+	key      string
+	head     string
+	children []string
+}
+
+// nodes agrupa por site: los artículos se anidan bajo la entrada de su site.
+// Si hay varios artículos de un site sin su portada guardada, se crea un encabezado con el host.
+func nodes(sites []Site, slug string) []node {
+	byHost := map[string][]Site{}
+	for _, s := range sites {
+		h := hostOf(s.URL)
+		byHost[h] = append(byHost[h], s)
+	}
+
+	var out []node
+	for h, g := range byHost {
+		var parent *Site
+		var arts []Site
+		for i := range g {
+			if parent == nil && g[i].Kind != "article" {
+				parent = &g[i]
+			} else {
+				arts = append(arts, g[i])
+			}
+		}
+		sort.Slice(arts, func(i, j int) bool {
+			return strings.ToLower(arts[i].Title) < strings.ToLower(arts[j].Title)
+		})
+		children := make([]string, len(arts))
+		for i, a := range arts {
+			children[i] = "  " + line(a, slug)
+		}
+
+		switch {
+		case parent != nil:
+			out = append(out, node{key: parent.Title, head: line(*parent, slug), children: children})
+		case len(arts) == 1:
+			out = append(out, node{key: arts[0].Title, head: line(arts[0], slug)})
+		default:
+			out = append(out, node{key: h, head: "- **" + h + "**", children: children})
+		}
+	}
+	sort.Slice(out, func(i, j int) bool {
+		ki, kj := strings.ToLower(out[i].key), strings.ToLower(out[j].key)
+		if ki != kj {
+			return ki < kj
+		}
+		return out[i].head < out[j].head
+	})
+	return out
+}
+
 // build regenera topics/<tema>/README.md y el README.md de la raíz.
 // La salida es determinista (sin fechas) para no generar commits vacíos.
 func build() error {
@@ -467,8 +520,11 @@ func build() error {
 
 		var b strings.Builder
 		fmt.Fprintf(&b, "# %s\n\n> %d sitios\n\n", display(slug), len(sites))
-		for _, s := range sites {
-			b.WriteString(line(s, slug) + "\n")
+		for _, n := range nodes(sites, slug) {
+			b.WriteString(n.head + "\n")
+			for _, c := range n.children {
+				b.WriteString(c + "\n")
+			}
 		}
 		b.WriteString("\n[← Volver al índice](../../README.md)\n")
 
